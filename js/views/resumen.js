@@ -2,6 +2,7 @@ import { loadMovimientos } from "../data.js";
 import { getSettings } from "../state.js";
 import { money, monthKey, dayKey, mesLabel } from "../format.js";
 import { drawBarChart } from "../charts.js";
+import { filtrarPorCategoria } from "./movimientos.js";
 
 export async function renderResumen(container) {
   const { data } = await loadMovimientos();
@@ -42,7 +43,9 @@ export async function renderResumen(container) {
     <section class="card">
       <h2>Por categoría — ${mesLabel(now.toISOString())}</h2>
       <canvas id="chart-categorias"></canvas>
-      ${hayLimitesCategoria ? '<p class="pie-grafico">En rojo, las categorías por encima de su límite configurado en Ajustes.</p>' : ""}
+      <p class="pie-grafico">Tocá una barra para ver el detalle en Movimientos.${
+        hayLimitesCategoria ? " En rojo, las categorías por encima de su límite configurado en Ajustes." : ""
+      }</p>
     </section>
     <section class="card">
       <h2>Por día — ${mesLabel(now.toISOString())}</h2>
@@ -63,6 +66,10 @@ export async function renderResumen(container) {
     labels: categoryLabels,
     values: Object.values(byCategory),
     threshold: categoryThresholds,
+    onBarClick: (categoria) => {
+      filtrarPorCategoria(categoria);
+      window.location.hash = "#/movimientos";
+    },
   });
   drawBarChart(container.querySelector("#chart-dias"), {
     labels: dailyTotals.map((_, i) => String(i + 1)),

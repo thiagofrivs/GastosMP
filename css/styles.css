@@ -145,9 +145,14 @@ body {
 }
 
 .toolbar input,
+.toolbar select,
 .toolbar button,
 .card input,
-.card button {
+.card select,
+.card button,
+.modal input,
+.modal select,
+.modal button {
   font-size: 16px;
   padding: 0.6rem;
   min-height: 44px;

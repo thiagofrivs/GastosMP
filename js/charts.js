@@ -1,6 +1,6 @@
 // Mini helper de barras sobre <canvas> nativo. Ver README.md ("Decisión que tomé sin
 // preguntarte") por qué no se vendorizó Chart.js para esto.
-export function drawBarChart(canvas, { labels, values, threshold = null }) {
+export function drawBarChart(canvas, { labels, values, threshold = null, onBarClick = null }) {
   const ctx = canvas.getContext("2d");
   const dpr = window.devicePixelRatio || 1;
   const cssWidth = canvas.clientWidth || 300;
@@ -30,6 +30,8 @@ export function drawBarChart(canvas, { labels, values, threshold = null }) {
   ctx.fillStyle = textColor;
   ctx.textAlign = "center";
 
+  const barRects = [];
+
   values.forEach((v, i) => {
     const barHeight = max === 0 ? 0 : (v / max) * chartHeight;
     const x = paddingLeft + i * (barWidth + barGap);
@@ -37,10 +39,30 @@ export function drawBarChart(canvas, { labels, values, threshold = null }) {
     const limite = Array.isArray(threshold) ? threshold[i] : threshold;
     ctx.fillStyle = limite != null && v > limite ? dangerColor : barColor;
     ctx.fillRect(x, y, barWidth, barHeight);
+    barRects.push({ x, width: barWidth, label: labels[i] });
 
     if (values.length <= 15 || i % Math.ceil(values.length / 15) === 0) {
       ctx.fillStyle = textColor;
       ctx.fillText(String(labels[i] ?? ""), x + barWidth / 2, cssHeight - 6);
     }
   });
+
+  // Cada dibujado reemplaza el listener anterior (si no, se acumulan cada vez
+  // que se re-renderiza la vista, igual que pasó con el pull-to-refresh).
+  if (canvas._barClickHandler) {
+    canvas.removeEventListener("click", canvas._barClickHandler);
+  }
+  if (onBarClick) {
+    canvas.style.cursor = "pointer";
+    const handler = (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const bar = barRects.find((b) => clickX >= b.x && clickX <= b.x + b.width);
+      if (bar) onBarClick(bar.label);
+    };
+    canvas.addEventListener("click", handler);
+    canvas._barClickHandler = handler;
+  } else {
+    canvas.style.cursor = "";
+  }
 }

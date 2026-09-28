@@ -2,10 +2,23 @@ import { loadMovimientos, invalidateCache } from "../data.js";
 import { money, fechaDia, escapeHtml } from "../format.js";
 import { bannerHtml } from "./inicio.js";
 import { abrirFormulario } from "./form.js";
+import { CATEGORIAS } from "../categorias.js";
+
+const SIN_CATEGORIA = "__sin__";
 
 let searchTerm = "";
 let fromFilter = "";
 let toFilter = "";
+let categoryFilter = "";
+
+// Para saltar acá desde otra vista (ej. tocar una barra en Resumen) ya filtrado
+// por una categoría puntual.
+export function filtrarPorCategoria(categoria) {
+  categoryFilter = categoria === "Sin categoría" ? SIN_CATEGORIA : categoria;
+  searchTerm = "";
+  fromFilter = "";
+  toFilter = "";
+}
 
 export async function renderMovimientos(container) {
   const { data, fromCache, lastSync, error } = await loadMovimientos();
@@ -26,6 +39,13 @@ function renderShell(container, data, fromCache, lastSync, error) {
         <input type="date" id="desde" value="${fromFilter}">
         <input type="date" id="hasta" value="${toFilter}">
       </div>
+      <select id="categoria-filtro">
+        <option value="">Todas las categorías</option>
+        ${CATEGORIAS.map(
+          (c) => `<option value="${c}" ${categoryFilter === c ? "selected" : ""}>${c}</option>`
+        ).join("")}
+        <option value="${SIN_CATEGORIA}" ${categoryFilter === SIN_CATEGORIA ? "selected" : ""}>Sin categoría</option>
+      </select>
       <button id="sincronizar">Sincronizar</button>
     </div>
     <div id="pull-indicator" class="pull-indicator" hidden>Soltá para sincronizar</div>
@@ -46,6 +66,10 @@ function renderShell(container, data, fromCache, lastSync, error) {
     toFilter = e.target.value;
     actualizar();
   });
+  container.querySelector("#categoria-filtro").addEventListener("change", (e) => {
+    categoryFilter = e.target.value;
+    actualizar();
+  });
   container.querySelector("#sincronizar").addEventListener("click", () => sincronizar(container));
 
   setupPullToRefresh(container, () => sincronizar(container));
@@ -59,6 +83,11 @@ function actualizarLista(container, data) {
     .filter((m) => !searchTerm || (m.concepto || "").toLowerCase().includes(searchTerm.toLowerCase()))
     .filter((m) => !fromFilter || m.fecha.slice(0, 10) >= fromFilter)
     .filter((m) => !toFilter || m.fecha.slice(0, 10) <= toFilter)
+    .filter((m) => {
+      if (!categoryFilter) return true;
+      if (categoryFilter === SIN_CATEGORIA) return !m.categoria;
+      return m.categoria === categoryFilter;
+    })
     .sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
 
   const groups = groupByDay(filtered);
@@ -86,7 +115,7 @@ function vacioHtml(sinDatos) {
     <p class="vacio">
       <span class="vacio-titulo">${sinDatos ? "Todavía no hay movimientos." : "No hay movimientos para este filtro."}</span>
       <span class="vacio-subtitulo">${
-        sinDatos ? "Se van a mostrar acá los gastos que registres." : "Probá cambiar la búsqueda o el rango de fechas."
+        sinDatos ? "Se van a mostrar acá los gastos que registres." : "Probá cambiar la búsqueda, el rango de fechas o la categoría."
       }</span>
     </p>
   `;
