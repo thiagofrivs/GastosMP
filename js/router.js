@@ -20,6 +20,13 @@ export async function renderRoute(container) {
   } catch (err) {
     container.innerHTML = `<div class="banner banner-error">Error: ${err.message}</div>`;
   }
+
+  // Solo en una navegación real entre pestañas, nunca en los re-renders internos
+  // que dispara cada vista sola (buscar, filtrar, editar) — para eso, cada vista
+  // llama a su propia función de render directamente, sin pasar por acá.
+  container.classList.remove("view-enter");
+  void container.offsetWidth;
+  container.classList.add("view-enter");
 }
 
 export function startRouter(container) {

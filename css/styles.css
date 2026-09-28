@@ -108,7 +108,18 @@ body {
 .vacio {
   opacity: 0.6;
   text-align: center;
-  padding: 1rem 0;
+  padding: 2rem 1rem;
+}
+
+.vacio-titulo {
+  display: block;
+  font-size: 0.95rem;
+}
+
+.vacio-subtitulo {
+  display: block;
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
 }
 
 .banner {
@@ -159,6 +170,11 @@ button {
   border: 1px solid var(--accent);
   background: var(--accent);
   color: white;
+  transition: transform 0.1s ease;
+}
+
+button:active {
+  transform: scale(0.96);
 }
 
 button.danger {
@@ -260,12 +276,37 @@ canvas {
   border-radius: 6px;
 }
 
-#resultado-conexion.ok {
-  color: var(--up);
+.mensaje-resultado {
+  margin: 0;
+  font-size: 0.85rem;
+  border-radius: 8px;
 }
-#resultado-conexion.error,
-.error {
-  color: var(--down);
+
+.mensaje-resultado.ok,
+.mensaje-resultado.error {
+  padding: 0.5rem 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.mensaje-resultado.ok {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.mensaje-resultado.error {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+@media (prefers-color-scheme: dark) {
+  .mensaje-resultado.ok {
+    background: rgba(74, 222, 128, 0.15);
+    color: var(--up);
+  }
+  .mensaje-resultado.error {
+    background: rgba(248, 113, 113, 0.15);
+    color: var(--down);
+  }
 }
 
 label {
@@ -316,6 +357,7 @@ label.presupuesto-cat-label {
   display: flex;
   align-items: flex-end;
   z-index: 20;
+  animation: overlayFadeIn 0.2s ease;
 }
 
 .modal {
@@ -326,6 +368,7 @@ label.presupuesto-cat-label {
   padding-bottom: calc(1rem + env(safe-area-inset-bottom));
   max-height: 85vh;
   overflow-y: auto;
+  animation: modalSlideUp 0.25s ease;
 }
 
 .modal form {
@@ -358,6 +401,7 @@ label.presupuesto-cat-label {
   height: 100%;
   border-radius: 4px;
   background: var(--accent);
+  transition: width 0.5s ease;
 }
 
 .presupuesto-warn .presupuesto-fill {
@@ -404,4 +448,47 @@ label.presupuesto-cat-label {
 .presupuesto-cat.presupuesto-danger .presupuesto-cat-header {
   color: var(--danger);
   font-weight: 600;
+}
+
+@keyframes viewFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes overlayFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalSlideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* Se aplica en cada navegación real entre pestañas (ver js/router.js), no en
+   cada re-render interno de una vista (búsqueda, filtros, ediciones) — si no,
+   parpadearía en cada letra tipeada en el buscador de Movimientos. */
+.view-enter {
+  animation: viewFadeIn 0.25s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
 }

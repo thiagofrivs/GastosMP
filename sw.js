@@ -1,4 +1,4 @@
-const CACHE_NAME = "pagosmp-shell-v4";
+const CACHE_NAME = "pagosmp-shell-v5";
 
 const APP_SHELL = [
   "./",

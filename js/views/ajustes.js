@@ -18,7 +18,7 @@ export async function renderAjustes(container) {
       <input id="token" type="text" value="${escapeHtml(token)}" placeholder="(si todavía no es obligatorio, dejalo vacío)">
       <button id="guardar-conexion">Guardar</button>
       <button id="probar">Probar conexión</button>
-      <p id="resultado-conexion"></p>
+      <p id="resultado-conexion" class="mensaje-resultado"></p>
     </section>
     <section class="card">
       <h2>Presupuesto</h2>
@@ -36,7 +36,7 @@ export async function renderAjustes(container) {
       ).join("")}
 
       <button id="guardar-presupuesto">Guardar presupuesto</button>
-      <p id="resultado-presupuesto"></p>
+      <p id="resultado-presupuesto" class="mensaje-resultado"></p>
     </section>
     <section class="card">
       <h2>Datos</h2>
@@ -101,7 +101,7 @@ export async function renderAjustes(container) {
 function mostrarResultado(container, selector, msg, isError) {
   const el = container.querySelector(selector);
   el.textContent = msg;
-  el.className = isError ? "error" : "ok";
+  el.className = "mensaje-resultado " + (isError ? "error" : "ok");
 }
 
 function exportarCsv(data) {

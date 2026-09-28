@@ -35,7 +35,7 @@ export async function abrirFormulario({ movimiento = null, onGuardado } = {}) {
           ).join("")}
         </select>
 
-        <p id="form-error" class="error"></p>
+        <p id="form-error" class="mensaje-resultado"></p>
         <div class="acciones-form">
           <button type="button" id="btn-cancelar">Cancelar</button>
           ${esEdicion ? '<button type="button" id="btn-borrar" class="danger">Borrar</button>' : ""}
@@ -61,7 +61,7 @@ export async function abrirFormulario({ movimiento = null, onGuardado } = {}) {
         cerrar();
         onGuardado?.();
       } catch (err) {
-        overlay.querySelector("#form-error").textContent = "Error: " + err.message;
+        mostrarError(overlay, err.message);
       }
     });
   }
@@ -75,8 +75,7 @@ export async function abrirFormulario({ movimiento = null, onGuardado } = {}) {
       fecha: new Date(form.fecha.value).toISOString(),
       categoria: form.categoria.value,
     };
-    const errorEl = overlay.querySelector("#form-error");
-    errorEl.textContent = "";
+    limpiarError(overlay);
 
     try {
       if (esEdicion) {
@@ -87,9 +86,21 @@ export async function abrirFormulario({ movimiento = null, onGuardado } = {}) {
       cerrar();
       onGuardado?.();
     } catch (err) {
-      errorEl.textContent = "Error: " + err.message;
+      mostrarError(overlay, err.message);
     }
   });
+}
+
+function mostrarError(overlay, mensaje) {
+  const el = overlay.querySelector("#form-error");
+  el.textContent = "Error: " + mensaje;
+  el.className = "mensaje-resultado error";
+}
+
+function limpiarError(overlay) {
+  const el = overlay.querySelector("#form-error");
+  el.textContent = "";
+  el.className = "mensaje-resultado";
 }
 
 function aInputLocal(iso) {

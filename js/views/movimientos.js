@@ -9,19 +9,15 @@ let toFilter = "";
 
 export async function renderMovimientos(container) {
   const { data, fromCache, lastSync, error } = await loadMovimientos();
-  renderList(container, data, fromCache, lastSync, error);
+  renderShell(container, data, fromCache, lastSync, error);
 }
 
-function renderList(container, data, fromCache, lastSync, error) {
-  const filtered = data
-    .filter((m) => m.fecha)
-    .filter((m) => !searchTerm || (m.concepto || "").toLowerCase().includes(searchTerm.toLowerCase()))
-    .filter((m) => !fromFilter || m.fecha.slice(0, 10) >= fromFilter)
-    .filter((m) => !toFilter || m.fecha.slice(0, 10) <= toFilter)
-    .sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
-
-  const groups = groupByDay(filtered);
-
+// El "cascarón" (buscador, filtros, botón sincronizar) se dibuja una sola vez por
+// navegación real a esta pestaña. Solo #lista-dias se vuelve a pintar en cada
+// letra tipeada o cambio de filtro (ver actualizarLista) — si reconstruyéramos
+// también el input de búsqueda en cada tecla, el navegador le perdería el foco
+// y solo se podría escribir un carácter por vez.
+function renderShell(container, data, fromCache, lastSync, error) {
   container.innerHTML = `
     ${bannerHtml(fromCache, lastSync, error)}
     <div class="toolbar">
@@ -33,24 +29,43 @@ function renderList(container, data, fromCache, lastSync, error) {
       <button id="sincronizar">Sincronizar</button>
     </div>
     <div id="pull-indicator" class="pull-indicator" hidden>Soltá para sincronizar</div>
-    <div id="lista-dias">
-      ${groups.length ? groups.map(renderDayGroup).join("") : '<p class="vacio">No hay movimientos para este filtro.</p>'}
-    </div>
+    <div id="lista-dias"></div>
   `;
+
+  const actualizar = () => actualizarLista(container, data);
 
   container.querySelector("#buscar").addEventListener("input", (e) => {
     searchTerm = e.target.value;
-    renderList(container, data, fromCache, lastSync, error);
+    actualizar();
   });
   container.querySelector("#desde").addEventListener("change", (e) => {
     fromFilter = e.target.value;
-    renderList(container, data, fromCache, lastSync, error);
+    actualizar();
   });
   container.querySelector("#hasta").addEventListener("change", (e) => {
     toFilter = e.target.value;
-    renderList(container, data, fromCache, lastSync, error);
+    actualizar();
   });
   container.querySelector("#sincronizar").addEventListener("click", () => sincronizar(container));
+
+  setupPullToRefresh(container, () => sincronizar(container));
+
+  actualizar();
+}
+
+function actualizarLista(container, data) {
+  const filtered = data
+    .filter((m) => m.fecha)
+    .filter((m) => !searchTerm || (m.concepto || "").toLowerCase().includes(searchTerm.toLowerCase()))
+    .filter((m) => !fromFilter || m.fecha.slice(0, 10) >= fromFilter)
+    .filter((m) => !toFilter || m.fecha.slice(0, 10) <= toFilter)
+    .sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+
+  const groups = groupByDay(filtered);
+
+  container.querySelector("#lista-dias").innerHTML = groups.length
+    ? groups.map(renderDayGroup).join("")
+    : vacioHtml(data.length === 0);
 
   container.querySelectorAll("[data-id]").forEach((el) => {
     el.addEventListener("click", () => {
@@ -58,14 +73,23 @@ function renderList(container, data, fromCache, lastSync, error) {
       if (mov) abrirFormulario({ movimiento: mov, onGuardado: () => renderMovimientos(container) });
     });
   });
-
-  setupPullToRefresh(container, () => sincronizar(container));
 }
 
 async function sincronizar(container) {
   invalidateCache();
   const fresh = await loadMovimientos({ force: true });
-  renderList(container, fresh.data, fresh.fromCache, fresh.lastSync, fresh.error);
+  renderShell(container, fresh.data, fresh.fromCache, fresh.lastSync, fresh.error);
+}
+
+function vacioHtml(sinDatos) {
+  return `
+    <p class="vacio">
+      <span class="vacio-titulo">${sinDatos ? "Todavía no hay movimientos." : "No hay movimientos para este filtro."}</span>
+      <span class="vacio-subtitulo">${
+        sinDatos ? "Se van a mostrar acá los gastos que registres." : "Probá cambiar la búsqueda o el rango de fechas."
+      }</span>
+    </p>
+  `;
 }
 
 function groupByDay(list) {

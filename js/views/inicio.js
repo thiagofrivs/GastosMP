@@ -50,7 +50,11 @@ export async function renderInicio(container) {
           </li>
         `
             )
-            .join("") || '<li class="vacio">Todavía no hay movimientos.</li>'
+            .join("") ||
+          `<li class="vacio">
+            <span class="vacio-titulo">Todavía no hay movimientos.</span>
+            <span class="vacio-subtitulo">Se van a mostrar acá los gastos que registres.</span>
+          </li>`
         }
       </ul>
     </section>
@@ -59,6 +63,24 @@ export async function renderInicio(container) {
 
   container.querySelector("#fab-agregar").addEventListener("click", () => {
     abrirFormulario({ onGuardado: () => renderInicio(container) });
+  });
+
+  animarBarrasPresupuesto(container);
+}
+
+// Las barras ya se insertan con su ancho final (calculado server-side, por así
+// decirlo); para que se vea la animación de "llenado" en vez de aparecer ya
+// llenas, las arrancamos en 0 y las llevamos al valor real un frame después.
+function animarBarrasPresupuesto(container) {
+  const barras = container.querySelectorAll(".presupuesto-fill");
+  barras.forEach((barra) => {
+    const destino = barra.style.width;
+    barra.style.width = "0%";
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        barra.style.width = destino;
+      });
+    });
   });
 }
 
