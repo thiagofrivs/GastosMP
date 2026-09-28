@@ -1,9 +1,11 @@
 import { loadMovimientos } from "../data.js";
+import { getSettings } from "../state.js";
 import { money, monthKey, dayKey, mesLabel } from "../format.js";
 import { drawBarChart } from "../charts.js";
 
 export async function renderResumen(container) {
   const { data } = await loadMovimientos();
+  const { presupuesto, presupuestosCategoria } = getSettings();
   const valid = data.filter((m) => m.fecha && m.monto != null);
 
   const months = lastMonths(12);
@@ -14,6 +16,11 @@ export async function renderResumen(container) {
   const monthData = valid.filter((m) => monthKey(m.fecha) === curMonthKey);
 
   const byCategory = groupSum(monthData, (m) => m.categoria || "Sin categoría");
+  const categoryLabels = Object.keys(byCategory);
+  const categoryThresholds = categoryLabels.map((cat) =>
+    presupuestosCategoria[cat] > 0 ? presupuestosCategoria[cat] : null
+  );
+  const hayLimitesCategoria = categoryThresholds.some((t) => t != null);
 
   const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
   const dailyTotals = Array.from({ length: daysInMonth }, (_, i) => {
@@ -30,10 +37,12 @@ export async function renderResumen(container) {
     <section class="card">
       <h2>Gastos por mes</h2>
       <canvas id="chart-meses"></canvas>
+      ${presupuesto > 0 ? `<p class="pie-grafico">En rojo, los meses por encima de tu presupuesto (${money(presupuesto)}).</p>` : ""}
     </section>
     <section class="card">
       <h2>Por categoría — ${mesLabel(now.toISOString())}</h2>
       <canvas id="chart-categorias"></canvas>
+      ${hayLimitesCategoria ? '<p class="pie-grafico">En rojo, las categorías por encima de su límite configurado en Ajustes.</p>' : ""}
     </section>
     <section class="card">
       <h2>Por día — ${mesLabel(now.toISOString())}</h2>
@@ -48,10 +57,12 @@ export async function renderResumen(container) {
   drawBarChart(container.querySelector("#chart-meses"), {
     labels: months.map((k) => k.slice(5)),
     values: totalsByMonth,
+    threshold: presupuesto > 0 ? presupuesto : null,
   });
   drawBarChart(container.querySelector("#chart-categorias"), {
-    labels: Object.keys(byCategory),
+    labels: categoryLabels,
     values: Object.values(byCategory),
+    threshold: categoryThresholds,
   });
   drawBarChart(container.querySelector("#chart-dias"), {
     labels: dailyTotals.map((_, i) => String(i + 1)),

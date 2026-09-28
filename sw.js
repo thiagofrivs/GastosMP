@@ -1,4 +1,4 @@
-const CACHE_NAME = "pagosmp-shell-v2";
+const CACHE_NAME = "pagosmp-shell-v4";
 
 const APP_SHELL = [
   "./",
@@ -8,6 +8,7 @@ const APP_SHELL = [
   "./js/app.js",
   "./js/router.js",
   "./js/state.js",
+  "./js/categorias.js",
   "./js/api.js",
   "./js/db.js",
   "./js/data.js",

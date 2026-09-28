@@ -1,7 +1,6 @@
 import { crearMovimiento, editarMovimiento, borrarMovimiento, loadMovimientos } from "../data.js";
 import { escapeHtml } from "../format.js";
-
-const CATEGORIAS = ["Comida", "Transporte", "Servicios", "Salud", "Ocio", "Otros"];
+import { CATEGORIAS } from "../categorias.js";
 
 export async function abrirFormulario({ movimiento = null, onGuardado } = {}) {
   const esEdicion = !!movimiento;

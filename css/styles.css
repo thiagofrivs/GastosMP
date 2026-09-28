@@ -275,6 +275,12 @@ label {
   opacity: 0.7;
 }
 
+label.presupuesto-cat-label {
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  opacity: 0.6;
+}
+
 .fab {
   position: fixed;
   right: 1rem;
@@ -335,4 +341,67 @@ label {
 
 .acciones-form button {
   flex: 1;
+}
+
+.presupuesto {
+  margin-top: 0.75rem;
+}
+
+.presupuesto-barra {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.presupuesto-fill {
+  height: 100%;
+  border-radius: 4px;
+  background: var(--accent);
+}
+
+.presupuesto-warn .presupuesto-fill {
+  background: #eab308;
+}
+
+.presupuesto-danger .presupuesto-fill {
+  background: var(--danger);
+}
+
+.presupuesto-texto {
+  margin: 0.4rem 0 0;
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+.presupuesto-danger .presupuesto-texto {
+  color: var(--danger);
+  opacity: 1;
+  font-weight: 600;
+}
+
+.pie-grafico {
+  margin: 0.4rem 0 0;
+  font-size: 0.8rem;
+  opacity: 0.6;
+}
+
+.presupuesto-cat {
+  margin-bottom: 0.75rem;
+}
+
+.presupuesto-cat:last-child {
+  margin-bottom: 0;
+}
+
+.presupuesto-cat-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  margin-bottom: 0.25rem;
+}
+
+.presupuesto-cat.presupuesto-danger .presupuesto-cat-header {
+  color: var(--danger);
+  font-weight: 600;
 }

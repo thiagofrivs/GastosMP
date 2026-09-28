@@ -1,6 +1,6 @@
 // Mini helper de barras sobre <canvas> nativo. Ver README.md ("Decisión que tomé sin
 // preguntarte") por qué no se vendorizó Chart.js para esto.
-export function drawBarChart(canvas, { labels, values }) {
+export function drawBarChart(canvas, { labels, values, threshold = null }) {
   const ctx = canvas.getContext("2d");
   const dpr = window.devicePixelRatio || 1;
   const cssWidth = canvas.clientWidth || 300;
@@ -12,6 +12,7 @@ export function drawBarChart(canvas, { labels, values }) {
 
   const styles = getComputedStyle(document.documentElement);
   const barColor = styles.getPropertyValue("--accent").trim() || "#4f8cff";
+  const dangerColor = styles.getPropertyValue("--danger").trim() || "#dc2626";
   const textColor = styles.getPropertyValue("--text").trim() || "#111";
 
   const max = Math.max(...values, 1);
@@ -33,7 +34,8 @@ export function drawBarChart(canvas, { labels, values }) {
     const barHeight = max === 0 ? 0 : (v / max) * chartHeight;
     const x = paddingLeft + i * (barWidth + barGap);
     const y = paddingTop + (chartHeight - barHeight);
-    ctx.fillStyle = barColor;
+    const limite = Array.isArray(threshold) ? threshold[i] : threshold;
+    ctx.fillStyle = limite != null && v > limite ? dangerColor : barColor;
     ctx.fillRect(x, y, barWidth, barHeight);
 
     if (values.length <= 15 || i % Math.ceil(values.length / 15) === 0) {
