@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+  <meta charset="utf-8" />
+  <title>Generador de íconos — Pagos MP</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 480px; margin: 2rem auto; text-align: center; }
+    canvas { border: 1px solid #ccc; margin: 1rem 0; }
+    button { padding: 0.6rem 1rem; margin: 0.25rem; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>Generador de íconos</h1>
+  <p>
+    Placeholder simple (un "$" en un círculo, sobre fondo azul). Descargá los 3 archivos y guardalos
+    en esta misma carpeta (<code>icons/</code>) con esos nombres exactos. Después los podés reemplazar
+    por un diseño propio, misma resolución y nombre.
+  </p>
+  <canvas id="preview" width="256" height="256"></canvas>
+  <div>
+    <button data-size="192" data-name="icon-192.png">Descargar icon-192.png</button>
+    <button data-size="512" data-name="icon-512.png">Descargar icon-512.png</button>
+    <button data-size="180" data-name="apple-touch-icon-180.png">Descargar apple-touch-icon-180.png</button>
+  </div>
+
+  <script>
+    function draw(canvas, size) {
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext("2d");
+
+      ctx.fillStyle = "#2563eb";
+      ctx.fillRect(0, 0, size, size);
+
+      const r = size * 0.38;
+      ctx.beginPath();
+      ctx.arc(size / 2, size / 2, r, 0, Math.PI * 2);
+      ctx.fillStyle = "#ffffff";
+      ctx.fill();
+
+      ctx.fillStyle = "#2563eb";
+      ctx.font = `bold ${Math.round(size * 0.42)}px system-ui, sans-serif`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("$", size / 2, size * 0.54);
+    }
+
+    const preview = document.getElementById("preview");
+    draw(preview, 256);
+
+    document.querySelectorAll("button").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const size = Number(btn.dataset.size);
+        const canvas = document.createElement("canvas");
+        draw(canvas, size);
+        canvas.toBlob((blob) => {
+          const a = document.createElement("a");
+          a.href = URL.createObjectURL(blob);
+          a.download = btn.dataset.name;
+          a.click();
+          URL.revokeObjectURL(a.href);
+        }, "image/png");
+      });
+    });
+  </script>
+</body>
+</html>
