@@ -245,7 +245,8 @@ canvas {
   text-decoration: none;
   color: var(--text);
   opacity: 0.6;
-  font-size: 0.85rem;
+  font-size: 0.75rem;
+  white-space: nowrap;
 }
 
 .tabbar a.active {
@@ -406,6 +407,11 @@ label.presupuesto-cat-label {
   color: var(--danger);
   opacity: 1;
   font-weight: 600;
+}
+
+.mes-header {
+  display: flex;
+  justify-content: space-between;
 }
 
 .pie-grafico {

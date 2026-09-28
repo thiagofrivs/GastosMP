@@ -5,7 +5,7 @@ import { loadMovimientos, invalidateCache } from "../data.js";
 import { escapeHtml } from "../format.js";
 import { CATEGORIAS } from "../categorias.js";
 
-const APP_VERSION = "0.3.0-fase3";
+const APP_VERSION = "0.4.0";
 
 export async function renderAjustes(container) {
   const { url, token, presupuesto, presupuestosCategoria } = getSettings();

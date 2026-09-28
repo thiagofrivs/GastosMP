@@ -1,4 +1,4 @@
-const CACHE_NAME = "pagosmp-shell-v7";
+const CACHE_NAME = "pagosmp-shell-v8";
 
 const APP_SHELL = [
   "./",
@@ -19,6 +19,7 @@ const APP_SHELL = [
   "./js/views/resumen.js",
   "./js/views/ajustes.js",
   "./js/views/form.js",
+  "./js/views/otros.js",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
   "./icons/apple-touch-icon-180.png",
@@ -26,7 +27,11 @@ const APP_SHELL = [
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL))
+    // cache: "reload" saltea la caché HTTP (GitHub Pages manda max-age=600): sin esto,
+    // una versión nueva podía instalarse con los archivos viejos de hasta 10 minutos atrás.
+    caches
+      .open(CACHE_NAME)
+      .then((cache) => cache.addAll(APP_SHELL.map((url) => new Request(url, { cache: "reload" }))))
   );
 });
 

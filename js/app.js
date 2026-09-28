@@ -4,9 +4,11 @@ import { renderInicio } from "./views/inicio.js";
 import { renderMovimientos } from "./views/movimientos.js";
 import { renderResumen } from "./views/resumen.js";
 import { renderAjustes } from "./views/ajustes.js";
+import { renderOtros } from "./views/otros.js";
 
 registerRoute("inicio", renderInicio);
 registerRoute("movimientos", renderMovimientos);
+registerRoute("otros", renderOtros);
 registerRoute("resumen", renderResumen);
 registerRoute("ajustes", renderAjustes);
 
