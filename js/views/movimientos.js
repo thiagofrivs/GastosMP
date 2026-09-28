@@ -34,7 +34,7 @@ function renderShell(container, data, fromCache, lastSync, error) {
   container.innerHTML = `
     ${bannerHtml(fromCache, lastSync, error)}
     <div class="toolbar">
-      <input type="search" id="buscar" placeholder="Buscar por concepto…" value="${escapeHtml(searchTerm)}">
+      <input type="search" id="buscar" placeholder="Buscar por concepto o categoría…" value="${escapeHtml(searchTerm)}">
       <div class="filtros">
         <input type="date" id="desde" value="${fromFilter}">
         <input type="date" id="hasta" value="${toFilter}">
@@ -80,7 +80,11 @@ function renderShell(container, data, fromCache, lastSync, error) {
 function actualizarLista(container, data) {
   const filtered = data
     .filter((m) => m.fecha)
-    .filter((m) => !searchTerm || (m.concepto || "").toLowerCase().includes(searchTerm.toLowerCase()))
+    .filter((m) => {
+      if (!searchTerm) return true;
+      const q = searchTerm.toLowerCase();
+      return (m.concepto || "").toLowerCase().includes(q) || (m.categoria || "").toLowerCase().includes(q);
+    })
     .filter((m) => !fromFilter || m.fecha.slice(0, 10) >= fromFilter)
     .filter((m) => !toFilter || m.fecha.slice(0, 10) <= toFilter)
     .filter((m) => {
@@ -141,7 +145,7 @@ function renderDayGroup(group) {
           .map(
             (m) => `
           <li class="clickable" data-id="${m.id}">
-            <span class="concepto">${escapeHtml(m.concepto)}${m._pending ? ' <span class="pendiente-badge">pendiente</span>' : ""}</span>
+            <span class="concepto">${escapeHtml(m.categoria || "Sin categoría")}${m._pending ? ' <span class="pendiente-badge">pendiente</span>' : ""}</span>
             <span class="monto">${money(m.monto)}</span>
           </li>
         `

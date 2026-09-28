@@ -43,8 +43,8 @@ export async function renderInicio(container) {
           ultimos
             .map(
               (m) => `
-          <li>
-            <span class="concepto">${escapeHtml(m.concepto)}${m._pending ? ' <span class="pendiente-badge">pendiente</span>' : ""}</span>
+          <li class="clickable" data-id="${m.id}">
+            <span class="concepto">${escapeHtml(m.categoria || "Sin categoría")}${m._pending ? ' <span class="pendiente-badge">pendiente</span>' : ""}</span>
             <span class="fecha">${fechaLarga(m.fecha)}</span>
             <span class="monto">${money(m.monto)}</span>
           </li>
@@ -63,6 +63,13 @@ export async function renderInicio(container) {
 
   container.querySelector("#fab-agregar").addEventListener("click", () => {
     abrirFormulario({ onGuardado: () => renderInicio(container) });
+  });
+
+  container.querySelectorAll("[data-id]").forEach((el) => {
+    el.addEventListener("click", () => {
+      const mov = data.find((m) => m.id === el.dataset.id);
+      if (mov) abrirFormulario({ movimiento: mov, onGuardado: () => renderInicio(container) });
+    });
   });
 
   animarBarrasPresupuesto(container);

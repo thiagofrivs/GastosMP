@@ -260,27 +260,6 @@ canvas {
   opacity: 0.6;
 }
 
-.update-banner {
-  position: fixed;
-  top: env(safe-area-inset-top);
-  left: 0;
-  right: 0;
-  background: var(--accent);
-  color: white;
-  text-align: center;
-  padding: 0.5rem;
-  z-index: 10;
-}
-
-.update-banner button {
-  background: white;
-  color: var(--accent);
-  border: none;
-  margin-left: 0.5rem;
-  padding: 0.25rem 0.75rem;
-  border-radius: 6px;
-}
-
 .mensaje-resultado {
   margin: 0;
   font-size: 0.85rem;
