@@ -1,5 +1,6 @@
 import { loadMovimientos } from "../data.js";
 import { money, fechaLarga, escapeHtml } from "../format.js";
+import { abrirFormulario } from "./form.js";
 
 export async function renderInicio(container) {
   const { data, fromCache, lastSync, error } = await loadMovimientos();
@@ -37,7 +38,7 @@ export async function renderInicio(container) {
             .map(
               (m) => `
           <li>
-            <span class="concepto">${escapeHtml(m.concepto)}</span>
+            <span class="concepto">${escapeHtml(m.concepto)}${m._pending ? ' <span class="pendiente-badge">pendiente</span>' : ""}</span>
             <span class="fecha">${fechaLarga(m.fecha)}</span>
             <span class="monto">${money(m.monto)}</span>
           </li>
@@ -47,7 +48,12 @@ export async function renderInicio(container) {
         }
       </ul>
     </section>
+    <button id="fab-agregar" class="fab" aria-label="Agregar gasto">+</button>
   `;
+
+  container.querySelector("#fab-agregar").addEventListener("click", () => {
+    abrirFormulario({ onGuardado: () => renderInicio(container) });
+  });
 }
 
 function monthKeyLocal(d) {

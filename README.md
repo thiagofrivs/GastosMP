@@ -1,4 +1,4 @@
-# PWA Registro de pagos MercadoPago — Fase 1 (solo lectura)
+# PWA Registro de pagos MercadoPago
 
 ## Correr en local (Windows, sin Mac)
 
@@ -49,16 +49,34 @@ reemplazalo cuando quieras por un diseño propio con el mismo nombre y tamaño.
 - Tolera filas con celdas vacías/malformadas del Sheet (el propio Apps Script ya las filtra, ver
   Fase 0).
 
-## Qué falta para instalarlo de verdad en el iPhone
+## Qué agrega la Fase 2
 
-Todavía no está desplegado en ningún hosting público — falta decidir GitHub Pages vs Cloudflare
-Pages/Netlify (pregunta abierta del documento de contexto, §11.3). Sin HTTPS público, Safari no deja
-"Agregar a pantalla de inicio" con service worker funcionando de forma confiable. Mientras tanto:
+- **Agregar gasto**: botón flotante "+" en Inicio. Formulario con concepto (autosugerido según
+  conceptos anteriores vía `<datalist>`), monto, fecha/hora (default: ahora) y categoría (Comida,
+  Transporte, Servicios, Salud, Ocio, Otros — o sin categoría).
+- **Editar/borrar**: tocá cualquier movimiento en la lista de Movimientos para abrir el mismo
+  formulario precargado, con botón "Borrar" (con confirmación).
+- **Actualización optimista**: el cambio se ve al toque en la UI, aunque el POST todavía no haya
+  terminado.
+- **Reintento offline**: si el POST falla por falta de red, la operación queda en una cola en
+  IndexedDB (`js/db.js`, store `pendientes`) y se reintenta sola la próxima vez que la app cargue
+  datos con conexión. Si en cambio el servidor responde con un error real (token inválido, dato
+  faltante), se deshace el cambio optimista y se muestra el error — no se reintenta algo que va a
+  fallar siempre.
+- Mientras una operación está en la cola de pendientes, el ítem se muestra con la etiqueta
+  "pendiente" en la lista.
 
-- Revisá todo en Chrome/Brave de escritorio en modo dispositivo móvil (DevTools) y corré Lighthouse
-  ahí (auditoría "Progressive Web App").
-- Cuando decidamos el hosting, desplegamos esta carpeta tal cual (es 100% estática) y ahí sí probamos
-  "Agregar a pantalla de inicio" en el iPhone real.
+**Ojo con el token**: mientras no se active `REQUIRE_TOKEN` en el Apps Script (ver
+`apps-script/FASE2-TOKEN.md`), cualquiera que tenga la URL `/exec` puede escribir en el Sheet. Esto
+ya era así desde la Fase 0/1 para las lecturas; ahora también aplica a las escrituras nuevas.
+
+## Deploy
+
+Esta carpeta (`pwa/`) es su propio repo git, separado de `apps-script/` y del documento de contexto
+(para no exponer nada del backend en un repo público). Vive en
+[github.com/thiagofrivs/GastosMP](https://github.com/thiagofrivs/GastosMP), publicado con GitHub
+Pages en `https://thiagofrivs.github.io/GastosMP/`. Para subir cambios nuevos: commit + push a `main`
+de ese repo, GitHub Pages redespliega solo.
 
 ## Decisión que tomé sin preguntarte: sin Chart.js
 

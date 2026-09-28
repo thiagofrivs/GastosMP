@@ -1,4 +1,4 @@
-const CACHE_NAME = "pagosmp-shell-v1";
+const CACHE_NAME = "pagosmp-shell-v2";
 
 const APP_SHELL = [
   "./",
@@ -17,6 +17,7 @@ const APP_SHELL = [
   "./js/views/movimientos.js",
   "./js/views/resumen.js",
   "./js/views/ajustes.js",
+  "./js/views/form.js",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
   "./icons/apple-touch-icon-180.png",

@@ -263,7 +263,8 @@ canvas {
 #resultado-conexion.ok {
   color: var(--up);
 }
-#resultado-conexion.error {
+#resultado-conexion.error,
+.error {
   color: var(--down);
 }
 
@@ -272,4 +273,66 @@ label {
   margin-top: 0.75rem;
   font-size: 0.85rem;
   opacity: 0.7;
+}
+
+.fab {
+  position: fixed;
+  right: 1rem;
+  bottom: calc(76px + env(safe-area-inset-bottom));
+  width: 56px;
+  height: 56px;
+  min-height: 56px;
+  border-radius: 50%;
+  font-size: 1.75rem;
+  line-height: 1;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 5;
+}
+
+.pendiente-badge {
+  font-size: 0.7rem;
+  opacity: 0.6;
+  font-weight: normal;
+}
+
+.lista-movs li.clickable {
+  cursor: pointer;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: flex-end;
+  z-index: 20;
+}
+
+.modal {
+  background: var(--card-bg);
+  width: 100%;
+  border-radius: 16px 16px 0 0;
+  padding: 1rem;
+  padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+.modal form {
+  display: flex;
+  flex-direction: column;
+}
+
+.acciones-form {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.acciones-form button {
+  flex: 1;
 }

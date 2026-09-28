@@ -1,6 +1,7 @@
 import { loadMovimientos, invalidateCache } from "../data.js";
 import { money, fechaDia, escapeHtml } from "../format.js";
 import { bannerHtml } from "./inicio.js";
+import { abrirFormulario } from "./form.js";
 
 let searchTerm = "";
 let fromFilter = "";
@@ -51,6 +52,13 @@ function renderList(container, data, fromCache, lastSync, error) {
   });
   container.querySelector("#sincronizar").addEventListener("click", () => sincronizar(container));
 
+  container.querySelectorAll("[data-id]").forEach((el) => {
+    el.addEventListener("click", () => {
+      const mov = data.find((m) => m.id === el.dataset.id);
+      if (mov) abrirFormulario({ movimiento: mov, onGuardado: () => renderMovimientos(container) });
+    });
+  });
+
   setupPullToRefresh(container, () => sincronizar(container));
 }
 
@@ -79,8 +87,8 @@ function renderDayGroup(group) {
         ${group.items
           .map(
             (m) => `
-          <li>
-            <span class="concepto">${escapeHtml(m.concepto)}</span>
+          <li class="clickable" data-id="${m.id}">
+            <span class="concepto">${escapeHtml(m.concepto)}${m._pending ? ' <span class="pendiente-badge">pendiente</span>' : ""}</span>
             <span class="monto">${money(m.monto)}</span>
           </li>
         `
@@ -91,35 +99,46 @@ function renderDayGroup(group) {
   `;
 }
 
+// El contenedor (#app) lo reutiliza el router para todas las vistas, así que hay que
+// sacar los listeners de la vez anterior (si no, se acumulan en cada re-render) y
+// chequear que sigamos en Movimientos antes de refrescar (si no, un pull-to-refresh
+// hecho en otra pestaña podría disparar una sincronización de esta vista por atrás).
 function setupPullToRefresh(container, onRefresh) {
+  if (container._pullHandlers) {
+    const h = container._pullHandlers;
+    container.removeEventListener("touchstart", h.start);
+    container.removeEventListener("touchmove", h.move);
+    container.removeEventListener("touchend", h.end);
+  }
+
   let startY = null;
   let pulling = false;
-  const indicator = container.querySelector("#pull-indicator");
 
-  container.addEventListener(
-    "touchstart",
-    (e) => {
-      if (container.scrollTop === 0) startY = e.touches[0].clientY;
-    },
-    { passive: true }
-  );
+  const enMovimientos = () => window.location.hash.replace(/^#\//, "") === "movimientos";
 
-  container.addEventListener(
-    "touchmove",
-    (e) => {
-      if (startY === null) return;
-      const diff = e.touches[0].clientY - startY;
-      if (diff > 60) {
-        pulling = true;
-        if (indicator) indicator.hidden = false;
-      }
-    },
-    { passive: true }
-  );
+  const start = (e) => {
+    if (enMovimientos() && container.scrollTop === 0) startY = e.touches[0].clientY;
+  };
 
-  container.addEventListener("touchend", () => {
-    if (pulling) onRefresh();
+  const move = (e) => {
+    if (startY === null) return;
+    const diff = e.touches[0].clientY - startY;
+    if (diff > 60) {
+      pulling = true;
+      const indicator = container.querySelector("#pull-indicator");
+      if (indicator) indicator.hidden = false;
+    }
+  };
+
+  const end = () => {
+    if (pulling && enMovimientos()) onRefresh();
     startY = null;
     pulling = false;
-  });
+  };
+
+  container.addEventListener("touchstart", start, { passive: true });
+  container.addEventListener("touchmove", move, { passive: true });
+  container.addEventListener("touchend", end);
+
+  container._pullHandlers = { start, move, end };
 }

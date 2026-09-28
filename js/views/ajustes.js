@@ -4,7 +4,7 @@ import { clearAll } from "../db.js";
 import { loadMovimientos, invalidateCache } from "../data.js";
 import { escapeHtml } from "../format.js";
 
-const APP_VERSION = "0.1.0-fase1";
+const APP_VERSION = "0.2.0-fase2";
 
 export async function renderAjustes(container) {
   const { url, token } = getSettings();
