@@ -1,3 +1,4 @@
+import { filtrarPorPersona } from "../persona.js";
 import { loadMovimientos } from "../data.js";
 import { getSettings } from "../state.js";
 import { money, monthKey, dayKey, mesLabel } from "../format.js";
@@ -5,7 +6,7 @@ import { drawBarChart } from "../charts.js";
 import { filtrarPorCategoria } from "./movimientos.js";
 
 export async function renderResumen(container) {
-  const { data } = await loadMovimientos();
+  const data = filtrarPorPersona((await loadMovimientos()).data);
   const { presupuesto, presupuestosCategoria } = getSettings();
   const valid = data.filter((m) => m.fecha && m.monto != null);
 

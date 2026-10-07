@@ -1,11 +1,14 @@
 import { crearMovimiento, editarMovimiento, borrarMovimiento, loadMovimientos } from "../data.js";
 import { escapeHtml } from "../format.js";
 import { CATEGORIAS } from "../categorias.js";
+import { getSettings } from "../state.js";
+import { usuariosConocidos } from "../persona.js";
 
 export async function abrirFormulario({ movimiento = null, onGuardado } = {}) {
   const esEdicion = !!movimiento;
   const { data } = await loadMovimientos();
   const conceptosPrevios = [...new Set(data.map((m) => m.concepto).filter(Boolean))];
+  const usuarioInicial = esEdicion ? movimiento.usuario || "" : getSettings().nombre;
 
   const overlay = document.createElement("div");
   overlay.className = "overlay";
@@ -34,6 +37,13 @@ export async function abrirFormulario({ movimiento = null, onGuardado } = {}) {
             (c) => `<option value="${c}" ${movimiento?.categoria === c ? "selected" : ""}>${c}</option>`
           ).join("")}
         </select>
+
+        <label for="f-usuario">Quién</label>
+        <input id="f-usuario" name="usuario" list="lista-usuarios" autocomplete="off"
+               value="${escapeHtml(usuarioInicial)}" placeholder="Ej. Thiago">
+        <datalist id="lista-usuarios">
+          ${usuariosConocidos(data).map((u) => `<option value="${escapeHtml(u)}">`).join("")}
+        </datalist>
 
         <p id="form-error" class="mensaje-resultado"></p>
         <div class="acciones-form">
@@ -74,6 +84,7 @@ export async function abrirFormulario({ movimiento = null, onGuardado } = {}) {
       monto: Number(form.monto.value),
       fecha: new Date(form.fecha.value).toISOString(),
       categoria: form.categoria.value,
+      usuario: form.usuario.value.trim(),
     };
     limpiarError(overlay);
 

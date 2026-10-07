@@ -1,18 +1,40 @@
 import { registerRoute, startRouter, renderRoute } from "./router.js";
-import { invalidateCache } from "./data.js";
+import { invalidateCache, loadMovimientos } from "./data.js";
+import { setPersona, actualizarSelectorPersona } from "./persona.js";
 import { renderInicio } from "./views/inicio.js";
 import { renderMovimientos } from "./views/movimientos.js";
 import { renderResumen } from "./views/resumen.js";
 import { renderAjustes } from "./views/ajustes.js";
 import { renderOtros } from "./views/otros.js";
 
-registerRoute("inicio", renderInicio);
-registerRoute("movimientos", renderMovimientos);
-registerRoute("otros", renderOtros);
-registerRoute("resumen", renderResumen);
-registerRoute("ajustes", renderAjustes);
-
 const container = document.getElementById("app");
+const barraPersona = document.getElementById("barra-persona");
+const selectPersona = document.getElementById("filtro-persona");
+
+// Las vistas con datos muestran arriba el filtro "Ver gastos de" (Ajustes no).
+function conFiltroPersona(render) {
+  return async (c) => {
+    await render(c);
+    const { data } = await loadMovimientos();
+    actualizarSelectorPersona(selectPersona, data);
+    barraPersona.hidden = false;
+  };
+}
+
+registerRoute("inicio", conFiltroPersona(renderInicio));
+registerRoute("movimientos", conFiltroPersona(renderMovimientos));
+registerRoute("otros", conFiltroPersona(renderOtros));
+registerRoute("resumen", conFiltroPersona(renderResumen));
+registerRoute("ajustes", async (c) => {
+  barraPersona.hidden = true;
+  await renderAjustes(c);
+});
+
+selectPersona.addEventListener("change", () => {
+  setPersona(selectPersona.value);
+  renderRoute(container);
+});
+
 startRouter(container);
 
 let swRegistration = null;

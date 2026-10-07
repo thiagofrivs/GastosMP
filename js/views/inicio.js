@@ -1,3 +1,4 @@
+import { filtrarPorPersona, usuarioBadge } from "../persona.js";
 import { loadMovimientos } from "../data.js";
 import { getSettings } from "../state.js";
 import { money, fechaLarga, escapeHtml } from "../format.js";
@@ -5,7 +6,8 @@ import { abrirFormulario } from "./form.js";
 import { CATEGORIAS } from "../categorias.js";
 
 export async function renderInicio(container) {
-  const { data, fromCache, lastSync, error } = await loadMovimientos();
+  const { data: todos, fromCache, lastSync, error } = await loadMovimientos();
+  const data = filtrarPorPersona(todos);
   const { presupuesto, presupuestosCategoria } = getSettings();
 
   const now = new Date();
@@ -44,7 +46,7 @@ export async function renderInicio(container) {
             .map(
               (m) => `
           <li class="clickable" data-id="${m.id}">
-            <span class="concepto">${escapeHtml(m.categoria || "Sin categoría")}${m._pending ? ' <span class="pendiente-badge">pendiente</span>' : ""}</span>
+            <span class="concepto">${escapeHtml(m.categoria || "Sin categoría")}${usuarioBadge(m)}${m._pending ? ' <span class="pendiente-badge">pendiente</span>' : ""}</span>
             <span class="fecha">${fechaLarga(m.fecha)}</span>
             <span class="monto">${money(m.monto)}</span>
           </li>

@@ -5,10 +5,10 @@ import { loadMovimientos, invalidateCache } from "../data.js";
 import { escapeHtml } from "../format.js";
 import { CATEGORIAS } from "../categorias.js";
 
-const APP_VERSION = "0.4.0";
+const APP_VERSION = "0.5.0";
 
 export async function renderAjustes(container) {
-  const { url, token, presupuesto, presupuestosCategoria } = getSettings();
+  const { url, token, nombre, presupuesto, presupuestosCategoria } = getSettings();
   container.innerHTML = `
     <section class="card">
       <h2>Conexión</h2>
@@ -16,6 +16,8 @@ export async function renderAjustes(container) {
       <input id="url" type="url" value="${escapeHtml(url)}" placeholder="https://script.google.com/macros/s/.../exec">
       <label for="token">Token</label>
       <input id="token" type="text" value="${escapeHtml(token)}" placeholder="(si todavía no es obligatorio, dejalo vacío)">
+      <label for="nombre">Tu nombre en este celular</label>
+      <input id="nombre" type="text" value="${escapeHtml(nombre)}" placeholder="Ej. Thiago (para lo que cargues con el +)">
       <button id="guardar-conexion">Guardar</button>
       <button id="probar">Probar conexión</button>
       <p id="resultado-conexion" class="mensaje-resultado"></p>
@@ -53,6 +55,7 @@ export async function renderAjustes(container) {
     setSettings({
       url: container.querySelector("#url").value.trim(),
       token: container.querySelector("#token").value.trim(),
+      nombre: container.querySelector("#nombre").value.trim(),
     });
     invalidateCache();
     mostrarResultado(container, "#resultado-conexion", "Guardado.", false);
@@ -105,8 +108,8 @@ function mostrarResultado(container, selector, msg, isError) {
 }
 
 function exportarCsv(data) {
-  const header = "fecha,concepto,monto,categoria\n";
-  const rows = data.map((m) => [m.fecha, csvEscape(m.concepto), m.monto, csvEscape(m.categoria)].join(",")).join("\n");
+  const header = "fecha,concepto,monto,categoria,usuario\n";
+  const rows = data.map((m) => [m.fecha, csvEscape(m.concepto), m.monto, csvEscape(m.categoria), csvEscape(m.usuario)].join(",")).join("\n");
   const blob = new Blob([header + rows], { type: "text/csv;charset=utf-8" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);

@@ -1,3 +1,4 @@
+import { filtrarPorPersona, usuarioBadge } from "../persona.js";
 import { loadMovimientos, invalidateCache } from "../data.js";
 import { money, fechaDia, escapeHtml } from "../format.js";
 import { bannerHtml } from "./inicio.js";
@@ -21,7 +22,8 @@ export function filtrarPorCategoria(categoria) {
 }
 
 export async function renderMovimientos(container) {
-  const { data, fromCache, lastSync, error } = await loadMovimientos();
+  const { data: todos, fromCache, lastSync, error } = await loadMovimientos();
+  const data = filtrarPorPersona(todos);
   renderShell(container, data, fromCache, lastSync, error);
 }
 
@@ -111,7 +113,7 @@ function actualizarLista(container, data) {
 async function sincronizar(container) {
   invalidateCache();
   const fresh = await loadMovimientos({ force: true });
-  renderShell(container, fresh.data, fresh.fromCache, fresh.lastSync, fresh.error);
+  renderShell(container, filtrarPorPersona(fresh.data), fresh.fromCache, fresh.lastSync, fresh.error);
 }
 
 function vacioHtml(sinDatos) {
@@ -145,7 +147,7 @@ function renderDayGroup(group) {
           .map(
             (m) => `
           <li class="clickable" data-id="${m.id}">
-            <span class="concepto">${escapeHtml(m.categoria || "Sin categoría")}${m._pending ? ' <span class="pendiente-badge">pendiente</span>' : ""}</span>
+            <span class="concepto">${escapeHtml(m.categoria || "Sin categoría")}${usuarioBadge(m)}${m._pending ? ' <span class="pendiente-badge">pendiente</span>' : ""}</span>
             <span class="monto">${money(m.monto)}</span>
           </li>
         `

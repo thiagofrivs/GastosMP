@@ -1,10 +1,12 @@
+import { filtrarPorPersona, usuarioBadge } from "../persona.js";
 import { loadMovimientos } from "../data.js";
 import { money, fechaLarga, mesLabel, monthKey, escapeHtml } from "../format.js";
 import { bannerHtml } from "./inicio.js";
 import { abrirFormulario } from "./form.js";
 
 export async function renderOtros(container) {
-  const { data, fromCache, lastSync, error } = await loadMovimientos();
+  const { data: todos, fromCache, lastSync, error } = await loadMovimientos();
+  const data = filtrarPorPersona(todos);
 
   const otros = data
     .filter((m) => m.fecha && m.categoria === "Otros")
@@ -53,7 +55,7 @@ function renderMes(items) {
           .map(
             (m) => `
           <li class="clickable" data-id="${m.id}">
-            <span class="concepto">${escapeHtml(m.concepto || "(sin descripción)")}${m._pending ? ' <span class="pendiente-badge">pendiente</span>' : ""}</span>
+            <span class="concepto">${escapeHtml(m.concepto || "(sin descripción)")}${usuarioBadge(m)}${m._pending ? ' <span class="pendiente-badge">pendiente</span>' : ""}</span>
             <span class="fecha">${fechaLarga(m.fecha)}</span>
             <span class="monto">${money(m.monto)}</span>
           </li>
