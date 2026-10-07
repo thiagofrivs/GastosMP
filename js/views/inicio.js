@@ -1,7 +1,8 @@
 import { filtrarPorPersona, usuarioBadge } from "../persona.js";
 import { loadMovimientos } from "../data.js";
 import { getSettings } from "../state.js";
-import { money, fechaLarga, escapeHtml } from "../format.js";
+import { money, fechaLarga, fechaDia, escapeHtml } from "../format.js";
+import { mesContable, getInicioMes } from "../periodo.js";
 import { abrirFormulario } from "./form.js";
 import { CATEGORIAS } from "../categorias.js";
 
@@ -15,7 +16,8 @@ export async function renderInicio(container) {
   const prevDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
   const prevKey = monthKeyLocal(prevDate);
 
-  const monthData = data.filter((m) => m.fecha && m.fecha.startsWith(curKey));
+  const inicioMes = getInicioMes();
+  const monthData = data.filter((m) => m.fecha && mesContable(m.fecha) === curKey);
   const totalMes = monthData.reduce((acc, m) => acc + (Number(m.monto) || 0), 0);
   const totalMesAnterior = sumMonth(data, prevKey);
   const diff = totalMesAnterior === 0 ? null : ((totalMes - totalMesAnterior) / totalMesAnterior) * 100;
@@ -27,6 +29,7 @@ export async function renderInicio(container) {
     <section class="card">
       <h2>Este mes</h2>
       <p class="total">${money(totalMes)}</p>
+      ${inicioMes ? `<p class="pie-grafico">Contando desde el ${fechaDia(`${inicioMes.fecha}T12:00:00`)}</p>` : ""}
       ${
         diff !== null
           ? `<p class="diff ${diff >= 0 ? "up" : "down"}">${diff >= 0 ? "+" : ""}${diff.toFixed(1)}% vs mes anterior</p>`
@@ -96,7 +99,7 @@ function monthKeyLocal(d) {
 
 function sumMonth(data, key) {
   return data
-    .filter((m) => m.fecha && m.fecha.startsWith(key))
+    .filter((m) => m.fecha && mesContable(m.fecha) === key)
     .reduce((acc, m) => acc + (Number(m.monto) || 0), 0);
 }
 

@@ -1,7 +1,8 @@
 import { filtrarPorPersona } from "../persona.js";
 import { loadMovimientos } from "../data.js";
 import { getSettings } from "../state.js";
-import { money, monthKey, dayKey, mesLabel } from "../format.js";
+import { money, dayKey, mesLabel } from "../format.js";
+import { mesContable, mesActualKey, diasDelMesActual } from "../periodo.js";
 import { drawBarChart } from "../charts.js";
 import { filtrarPorCategoria } from "./movimientos.js";
 
@@ -11,11 +12,11 @@ export async function renderResumen(container) {
   const valid = data.filter((m) => m.fecha && m.monto != null);
 
   const months = lastMonths(12);
-  const totalsByMonth = months.map((key) => sumWhere(valid, (m) => monthKey(m.fecha) === key));
+  const totalsByMonth = months.map((key) => sumWhere(valid, (m) => mesContable(m.fecha) === key));
 
   const now = new Date();
-  const curMonthKey = monthKey(now.toISOString());
-  const monthData = valid.filter((m) => monthKey(m.fecha) === curMonthKey);
+  const curMonthKey = mesActualKey();
+  const monthData = valid.filter((m) => mesContable(m.fecha) === curMonthKey);
 
   const byCategory = groupSum(monthData, (m) => m.categoria || "Sin categoría");
   const categoryLabels = Object.keys(byCategory);
@@ -24,11 +25,8 @@ export async function renderResumen(container) {
   );
   const hayLimitesCategoria = categoryThresholds.some((t) => t != null);
 
-  const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-  const dailyTotals = Array.from({ length: daysInMonth }, (_, i) => {
-    const key = dayKey(new Date(now.getFullYear(), now.getMonth(), i + 1).toISOString());
-    return sumWhere(monthData, (m) => dayKey(m.fecha) === key);
-  });
+  const dias = diasDelMesActual();
+  const dailyTotals = dias.map((key) => sumWhere(monthData, (m) => dayKey(m.fecha) === key));
 
   const totalMes = monthData.reduce((acc, m) => acc + Number(m.monto), 0);
   const diasConGasto = dailyTotals.filter((v) => v > 0).length || 1;
@@ -73,7 +71,7 @@ export async function renderResumen(container) {
     },
   });
   drawBarChart(container.querySelector("#chart-dias"), {
-    labels: dailyTotals.map((_, i) => String(i + 1)),
+    labels: dias.map((key) => String(Number(key.slice(8)))),
     values: dailyTotals,
   });
 }

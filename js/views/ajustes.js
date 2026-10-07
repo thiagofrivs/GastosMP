@@ -2,13 +2,18 @@ import { getSettings, setSettings } from "../state.js";
 import { testConnection } from "../api.js";
 import { clearAll } from "../db.js";
 import { loadMovimientos, invalidateCache } from "../data.js";
-import { escapeHtml } from "../format.js";
+import { escapeHtml, dayKey, mesLabel } from "../format.js";
+import { getInicioMes, setInicioMes } from "../periodo.js";
 import { CATEGORIAS } from "../categorias.js";
 
-const APP_VERSION = "0.6.0";
+const APP_VERSION = "0.7.0";
 
 export async function renderAjustes(container) {
   const { url, token, nombre, presupuesto, presupuestosCategoria } = getSettings();
+  const inicioMes = getInicioMes();
+  const hoy = new Date();
+  const ultimoDiaMesAnterior = dayKey(new Date(hoy.getFullYear(), hoy.getMonth(), 0, 12));
+
   container.innerHTML = `
     <section class="card">
       <h2>Conexión</h2>
@@ -39,6 +44,20 @@ export async function renderAjustes(container) {
 
       <button id="guardar-presupuesto">Guardar presupuesto</button>
       <p id="resultado-presupuesto" class="mensaje-resultado"></p>
+    </section>
+    <section class="card">
+      <h2>Mes actual</h2>
+      <label class="check">
+        <input type="checkbox" id="mes-corrido" ${inicioMes ? "checked" : ""}>
+        Contar días anteriores como parte de este mes
+      </label>
+      <div id="mes-corrido-fecha" ${inicioMes ? "" : "hidden"}>
+        <label for="inicio-mes">Contar desde</label>
+        <input type="date" id="inicio-mes" max="${ultimoDiaMesAnterior}"
+               value="${inicioMes ? inicioMes.fecha : ultimoDiaMesAnterior}">
+        <p class="pie-grafico">Vale solo para ${mesLabel(hoy)}: cuando empiece el mes que viene, vuelve solo a lo normal.</p>
+      </div>
+      <p id="resultado-mes" class="mensaje-resultado"></p>
     </section>
     <section class="card">
       <h2>Datos</h2>
@@ -86,6 +105,26 @@ export async function renderAjustes(container) {
     });
     mostrarResultado(container, "#resultado-presupuesto", "Guardado.", false);
   });
+
+  const checkMes = container.querySelector("#mes-corrido");
+  const inputInicioMes = container.querySelector("#inicio-mes");
+  const guardarInicioMes = () => {
+    container.querySelector("#mes-corrido-fecha").hidden = !checkMes.checked;
+    if (!checkMes.checked) {
+      setInicioMes(null);
+      mostrarResultado(container, "#resultado-mes", "Listo: el mes vuelve a contar desde el día 1.", false);
+      return;
+    }
+    const fecha = inputInicioMes.value;
+    if (!fecha || fecha > ultimoDiaMesAnterior) {
+      mostrarResultado(container, "#resultado-mes", "Elegí una fecha del mes pasado o anterior.", true);
+      return;
+    }
+    setInicioMes(fecha);
+    mostrarResultado(container, "#resultado-mes", "Guardado.", false);
+  };
+  checkMes.addEventListener("change", guardarInicioMes);
+  inputInicioMes.addEventListener("change", guardarInicioMes);
 
   container.querySelector("#exportar").addEventListener("click", async () => {
     const { data } = await loadMovimientos();

@@ -1,6 +1,7 @@
 import { filtrarPorPersona, usuarioBadge } from "../persona.js";
 import { loadMovimientos } from "../data.js";
-import { money, fechaLarga, mesLabel, monthKey, escapeHtml } from "../format.js";
+import { money, fechaLarga, mesLabel, escapeHtml } from "../format.js";
+import { mesContable } from "../periodo.js";
 import { bannerHtml } from "./inicio.js";
 import { abrirFormulario } from "./form.js";
 
@@ -35,19 +36,19 @@ export async function renderOtros(container) {
 function agruparPorMes(list) {
   const map = new Map();
   list.forEach((m) => {
-    const key = monthKey(m.fecha);
+    const key = mesContable(m.fecha);
     if (!map.has(key)) map.set(key, []);
     map.get(key).push(m);
   });
-  return [...map.values()];
+  return [...map.entries()];
 }
 
-function renderMes(items) {
+function renderMes([key, items]) {
   const totalMes = items.reduce((acc, m) => acc + (Number(m.monto) || 0), 0);
   return `
     <section class="card">
       <h2 class="mes-header">
-        <span>${mesLabel(items[0].fecha)}</span>
+        <span>${mesLabel(`${key}-15T12:00:00`)}</span>
         <span>${money(totalMes)}</span>
       </h2>
       <ul class="lista-movs">

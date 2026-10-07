@@ -586,3 +586,34 @@ label.presupuesto-cat-label {
 .panel-filtros-acciones button {
   flex: 1;
 }
+
+.card label.check {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  opacity: 1;
+  font-size: 0.95rem;
+}
+
+.card label.check input {
+  width: 1.3rem;
+  height: 1.3rem;
+  min-height: 0;
+  padding: 0;
+  margin: 0;
+  flex-shrink: 0;
+  accent-color: var(--accent);
+}
+
+#mes-corrido-fecha input {
+  width: 100%;
+}
+
+.card input:not([type="checkbox"]),
+.card select {
+  width: 100%;
+}
+
+.card > button {
+  margin-top: 0.75rem;
+}
