@@ -20,10 +20,7 @@ export async function renderInicio(container) {
   const totalMesAnterior = sumMonth(data, prevKey);
   const diff = totalMesAnterior === 0 ? null : ((totalMes - totalMesAnterior) / totalMesAnterior) * 100;
 
-  const ultimos = [...data]
-    .filter((m) => m.fecha)
-    .sort((a, b) => new Date(b.fecha) - new Date(a.fecha))
-    .slice(0, 10);
+  const ultimos = [...monthData].sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
 
   container.innerHTML = `
     ${bannerHtml(fromCache, lastSync, error)}
@@ -39,7 +36,7 @@ export async function renderInicio(container) {
     </section>
     ${presupuestoCategoriaHtml(monthData, presupuestosCategoria)}
     <section class="card">
-      <h2>Últimos movimientos</h2>
+      <h2>Movimientos de este mes</h2>
       <ul class="lista-movs">
         ${
           ultimos
@@ -54,8 +51,8 @@ export async function renderInicio(container) {
             )
             .join("") ||
           `<li class="vacio">
-            <span class="vacio-titulo">Todavía no hay movimientos.</span>
-            <span class="vacio-subtitulo">Se van a mostrar acá los gastos que registres.</span>
+            <span class="vacio-titulo">Todavía no hay movimientos este mes.</span>
+            <span class="vacio-subtitulo">Los meses anteriores los ves en Movimientos.</span>
           </li>`
         }
       </ul>

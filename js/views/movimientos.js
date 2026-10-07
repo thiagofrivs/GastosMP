@@ -1,4 +1,10 @@
-import { filtrarPorPersona, usuarioBadge } from "../persona.js";
+import {
+  filtrarPorPersona,
+  usuarioBadge,
+  getPersona,
+  setPersona,
+  actualizarSelectorPersona,
+} from "../persona.js";
 import { loadMovimientos, invalidateCache } from "../data.js";
 import { money, fechaDia, escapeHtml } from "../format.js";
 import { bannerHtml } from "./inicio.js";
@@ -7,10 +13,15 @@ import { CATEGORIAS } from "../categorias.js";
 
 const SIN_CATEGORIA = "__sin__";
 
+const ICONO_FILTRO =
+  '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
+  'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5h18l-7 8v6l-4 2v-8z"/></svg>';
+
 let searchTerm = "";
 let fromFilter = "";
 let toFilter = "";
 let categoryFilter = "";
+let filtrosAbiertos = false;
 
 // Para saltar acá desde otra vista (ej. tocar una barra en Resumen) ya filtrado
 // por una categoría puntual.
@@ -22,12 +33,11 @@ export function filtrarPorCategoria(categoria) {
 }
 
 export async function renderMovimientos(container) {
-  const { data: todos, fromCache, lastSync, error } = await loadMovimientos();
-  const data = filtrarPorPersona(todos);
+  const { data, fromCache, lastSync, error } = await loadMovimientos();
   renderShell(container, data, fromCache, lastSync, error);
 }
 
-// El "cascarón" (buscador, filtros, botón sincronizar) se dibuja una sola vez por
+// El "cascarón" (buscador, botón y panel de filtros) se dibuja una sola vez por
 // navegación real a esta pestaña. Solo #lista-dias se vuelve a pintar en cada
 // letra tipeada o cambio de filtro (ver actualizarLista) — si reconstruyéramos
 // también el input de búsqueda en cada tecla, el navegador le perdería el foco
@@ -36,43 +46,85 @@ function renderShell(container, data, fromCache, lastSync, error) {
   container.innerHTML = `
     ${bannerHtml(fromCache, lastSync, error)}
     <div class="toolbar">
-      <input type="search" id="buscar" placeholder="Buscar por concepto o categoría…" value="${escapeHtml(searchTerm)}">
-      <div class="filtros">
-        <input type="date" id="desde" value="${fromFilter}">
-        <input type="date" id="hasta" value="${toFilter}">
+      <div class="toolbar-fila">
+        <input type="search" id="buscar" placeholder="Buscar…" value="${escapeHtml(searchTerm)}">
+        <button type="button" id="btn-filtros" class="btn-filtros" aria-controls="panel-filtros"
+                aria-expanded="${filtrosAbiertos}">
+          ${ICONO_FILTRO}<span>Filtros</span><span id="filtros-contador" class="filtros-contador" hidden></span>
+        </button>
       </div>
-      <select id="categoria-filtro">
-        <option value="">Todas las categorías</option>
-        ${CATEGORIAS.map(
-          (c) => `<option value="${c}" ${categoryFilter === c ? "selected" : ""}>${c}</option>`
-        ).join("")}
-        <option value="${SIN_CATEGORIA}" ${categoryFilter === SIN_CATEGORIA ? "selected" : ""}>Sin categoría</option>
-      </select>
-      <button id="sincronizar">Sincronizar</button>
+      <div id="panel-filtros" class="panel-filtros" ${filtrosAbiertos ? "" : "hidden"}>
+        <div class="filtros">
+          <div>
+            <label for="desde">Desde</label>
+            <input type="date" id="desde" value="${fromFilter}">
+          </div>
+          <div>
+            <label for="hasta">Hasta</label>
+            <input type="date" id="hasta" value="${toFilter}">
+          </div>
+        </div>
+        <label for="categoria-filtro">Categoría</label>
+        <select id="categoria-filtro">
+          <option value="">Todas las categorías</option>
+          ${CATEGORIAS.map(
+            (c) => `<option value="${c}" ${categoryFilter === c ? "selected" : ""}>${c}</option>`
+          ).join("")}
+          <option value="${SIN_CATEGORIA}" ${categoryFilter === SIN_CATEGORIA ? "selected" : ""}>Sin categoría</option>
+        </select>
+        <label for="persona-filtro">Persona</label>
+        <select id="persona-filtro"></select>
+        <div class="panel-filtros-acciones">
+          <button type="button" id="limpiar-filtros">Limpiar filtros</button>
+          <button type="button" id="sincronizar">Sincronizar</button>
+        </div>
+      </div>
     </div>
     <div id="pull-indicator" class="pull-indicator" hidden>Soltá para sincronizar</div>
     <div id="lista-dias"></div>
   `;
 
+  const $ = (sel) => container.querySelector(sel);
+  const selectPersona = $("#persona-filtro");
+  actualizarSelectorPersona(selectPersona, data);
+
   const actualizar = () => actualizarLista(container, data);
 
-  container.querySelector("#buscar").addEventListener("input", (e) => {
+  $("#buscar").addEventListener("input", (e) => {
     searchTerm = e.target.value;
     actualizar();
   });
-  container.querySelector("#desde").addEventListener("change", (e) => {
+  $("#btn-filtros").addEventListener("click", () => {
+    filtrosAbiertos = !filtrosAbiertos;
+    $("#panel-filtros").hidden = !filtrosAbiertos;
+    $("#btn-filtros").setAttribute("aria-expanded", String(filtrosAbiertos));
+  });
+  $("#desde").addEventListener("change", (e) => {
     fromFilter = e.target.value;
     actualizar();
   });
-  container.querySelector("#hasta").addEventListener("change", (e) => {
+  $("#hasta").addEventListener("change", (e) => {
     toFilter = e.target.value;
     actualizar();
   });
-  container.querySelector("#categoria-filtro").addEventListener("change", (e) => {
+  $("#categoria-filtro").addEventListener("change", (e) => {
     categoryFilter = e.target.value;
     actualizar();
   });
-  container.querySelector("#sincronizar").addEventListener("click", () => sincronizar(container));
+  selectPersona.addEventListener("change", (e) => {
+    setPersona(e.target.value);
+    actualizar();
+  });
+  $("#limpiar-filtros").addEventListener("click", () => {
+    fromFilter = toFilter = categoryFilter = "";
+    setPersona("");
+    $("#desde").value = "";
+    $("#hasta").value = "";
+    $("#categoria-filtro").value = "";
+    selectPersona.value = "";
+    actualizar();
+  });
+  $("#sincronizar").addEventListener("click", () => sincronizar(container));
 
   setupPullToRefresh(container, () => sincronizar(container));
 
@@ -80,7 +132,7 @@ function renderShell(container, data, fromCache, lastSync, error) {
 }
 
 function actualizarLista(container, data) {
-  const filtered = data
+  const filtered = filtrarPorPersona(data)
     .filter((m) => m.fecha)
     .filter((m) => {
       if (!searchTerm) return true;
@@ -95,6 +147,11 @@ function actualizarLista(container, data) {
       return m.categoria === categoryFilter;
     })
     .sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+
+  const activos = [fromFilter, toFilter, categoryFilter, getPersona()].filter(Boolean).length;
+  const contador = container.querySelector("#filtros-contador");
+  contador.textContent = String(activos);
+  contador.hidden = activos === 0;
 
   const groups = groupByDay(filtered);
 
@@ -113,7 +170,7 @@ function actualizarLista(container, data) {
 async function sincronizar(container) {
   invalidateCache();
   const fresh = await loadMovimientos({ force: true });
-  renderShell(container, filtrarPorPersona(fresh.data), fresh.fromCache, fresh.lastSync, fresh.error);
+  renderShell(container, fresh.data, fresh.fromCache, fresh.lastSync, fresh.error);
 }
 
 function vacioHtml(sinDatos) {
@@ -121,7 +178,7 @@ function vacioHtml(sinDatos) {
     <p class="vacio">
       <span class="vacio-titulo">${sinDatos ? "Todavía no hay movimientos." : "No hay movimientos para este filtro."}</span>
       <span class="vacio-subtitulo">${
-        sinDatos ? "Se van a mostrar acá los gastos que registres." : "Probá cambiar la búsqueda, el rango de fechas o la categoría."
+        sinDatos ? "Se van a mostrar acá los gastos que registres." : "Probá cambiar la búsqueda o los filtros."
       }</span>
     </p>
   `;

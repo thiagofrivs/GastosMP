@@ -11,7 +11,8 @@ const container = document.getElementById("app");
 const barraPersona = document.getElementById("barra-persona");
 const selectPersona = document.getElementById("filtro-persona");
 
-// Las vistas con datos muestran arriba el filtro "Ver gastos de" (Ajustes no).
+// Inicio, Otros y Resumen muestran arriba el filtro "Ver gastos de". Movimientos lo
+// tiene dentro de su propio panel de filtros, y Ajustes no lo necesita.
 function conFiltroPersona(render) {
   return async (c) => {
     await render(c);
@@ -21,14 +22,18 @@ function conFiltroPersona(render) {
   };
 }
 
+function sinFiltroPersona(render) {
+  return async (c) => {
+    barraPersona.hidden = true;
+    await render(c);
+  };
+}
+
 registerRoute("inicio", conFiltroPersona(renderInicio));
-registerRoute("movimientos", conFiltroPersona(renderMovimientos));
+registerRoute("movimientos", sinFiltroPersona(renderMovimientos));
 registerRoute("otros", conFiltroPersona(renderOtros));
 registerRoute("resumen", conFiltroPersona(renderResumen));
-registerRoute("ajustes", async (c) => {
-  barraPersona.hidden = true;
-  await renderAjustes(c);
-});
+registerRoute("ajustes", sinFiltroPersona(renderAjustes));
 
 selectPersona.addEventListener("change", () => {
   setPersona(selectPersona.value);

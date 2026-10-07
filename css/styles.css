@@ -521,3 +521,68 @@ label.presupuesto-cat-label {
   margin-left: 0.25rem;
   white-space: nowrap;
 }
+
+.toolbar-fila {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.toolbar-fila input {
+  flex: 1;
+  min-width: 0;
+}
+
+.toolbar .btn-filtros {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  white-space: nowrap;
+}
+
+.filtros-contador {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  padding: 0 0.3rem;
+  border-radius: 999px;
+  background: var(--accent);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.filtros-contador[hidden],
+.panel-filtros[hidden] {
+  display: none;
+}
+
+.panel-filtros {
+  display: flex;
+  flex-direction: column;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0 1rem 1rem;
+  animation: viewFadeIn 0.2s ease;
+}
+
+.toolbar .filtros > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.toolbar .filtros input {
+  width: 100%;
+}
+
+.panel-filtros-acciones {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.panel-filtros-acciones button {
+  flex: 1;
+}
